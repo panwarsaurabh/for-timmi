@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>For Vimran 💖</title>
+  <meta name="description" content="A little universe, made for a birthday.">
+  <meta name="theme-color" content="#14061f">
+  <meta property="og:title" content="A little universe, made for you 💖">
+  <meta property="og:description" content="Open your present.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💖</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Fraunces:ital,opsz,wght@0,9..144,200..800;1,9..144,200..800&family=Syne:wght@500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.css" integrity="sha384-pAFowDtEJGvoq8dGiFmgKkO1h5cvbHkCysvXumyjfJBsi8qJwG429whEp2xanR+c" crossorigin="anonymous">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }</script>
+</head>
+<body class="is-locked">
+
+  <div class="grain" aria-hidden="true"></div>
+  <div class="progress" aria-hidden="true"><span></span></div>
+  <div class="cursor" aria-hidden="true"><span class="cursor__label"></span></div>
+  <div class="cursor-dot" aria-hidden="true"></div>
+
+  <!-- ============ PRELOADER ============ -->
+  <div class="loader" id="loader">
+    <div class="loader__name" aria-hidden="true"></div>
+    <div class="loader__count"><span id="loaderCount">000</span></div>
+    <p class="loader__line">preparing something special…</p>
+  </div>
+
+  <!-- ============ GIFT ============ -->
+  <div class="gift" id="gift">
+    <div class="gift__stars" aria-hidden="true"></div>
+    <p class="gift__kicker">a little universe, made just for you</p>
+    <button class="gift__btn" id="giftBtn" aria-label="Open your present" data-cursor="open">
+      <span class="gift__glow"></span>
+      <span class="gift__box"><span class="gift__ribbon-v"></span></span>
+      <span class="gift__lid"><span class="gift__ribbon-v"></span><span class="gift__bow"><i></i><i></i><b></b></span></span>
+    </button>
+    <p class="gift__hint">tap to open, <span data-name>Timmi</span> 💝</p>
+  </div>
+
+  <!-- ============ TOP BAR ============ -->
+  <header class="topbar">
+    <a class="topbar__logo" href="#hero">for <em data-name>Timmi</em></a>
+    <div class="chapter-ind" aria-hidden="true">
+      <span class="chapter-ind__num">01</span>
+      <span class="chapter-ind__label">Happy Birthday</span>
+    </div>
+    <button class="sound" id="soundBtn" aria-label="Toggle music" aria-pressed="false" data-cursor="music">
+      <span></span><span></span><span></span><span></span>
+    </button>
+  </header>
+
+  <main id="main">
+
+    <!-- 01 HERO -->
+    <section class="hero" id="hero" data-chapter="Happy Birthday">
+      <canvas class="hero__canvas" id="heroCanvas"></canvas>
+      <div class="hero__fallback" aria-hidden="true"><span data-hero-name>Timmi</span></div>
+      <div class="hero__content">
+        <p class="hero__kicker">✦ today the universe celebrates ✦</p>
+        <h1 class="hero__title">
+          <span class="sr-only">Happy Birthday <span data-name>Timmi</span></span>
+          <span class="hero__line" aria-hidden="true">Happy</span>
+          <span class="hero__line hero__line--italic" aria-hidden="true">Birthday,</span>
+        </h1>
+      </div>
+      <div class="hero__scroll" aria-hidden="true"><span>scroll</span><i></i></div>
+      <div class="marquee hero__marquee" aria-hidden="true"><div class="marquee__track" id="heroMarquee"></div></div>
+    </section>
+
+    <!-- 02 LETTER -->
+    <section class="letter" id="letter" data-chapter="A Letter">
+      <canvas class="petals" id="petals" aria-hidden="true"></canvas>
+      <div class="letter__stage">
+        <div class="envelope" aria-hidden="true">
+          <div class="envelope__back"></div>
+          <div class="envelope__peek"></div>
+          <div class="envelope__front"></div>
+          <div class="envelope__flap"></div>
+          <div class="envelope__seal">♥</div>
+        </div>
+        <article class="sheet">
+          <p class="sheet__hi">My dearest <span data-name>Timmi</span>,</p>
+          <div class="sheet__text" id="letterText"></div>
+          <p class="sheet__sign">— forever yours, <span data-from>Saurabh</span></p>
+        </article>
+      </div>
+    </section>
+
+    <!-- 03 TRAVEL -->
+    <section class="travel" id="travel" data-chapter="Around the World">
+      <div class="travel__pin">
+        <div class="travel__places" id="travelPlaces" aria-hidden="true"></div>
+        <div class="travel__track" id="travelTrack">
+          <svg class="travel__path" id="travelPath" aria-hidden="true"></svg>
+          <div class="travel__intro">
+            <p class="kicker">chapter 03</p>
+            <h2 data-split>Around the <em>World</em></h2>
+            <p class="section-sub">every place is better with you in it →</p>
+          </div>
+          <!-- trips injected -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 US -->
+    <section class="us" id="us" data-chapter="You &amp; Me">
+      <header class="section-head">
+        <p class="kicker">chapter 04</p>
+        <h2 data-split>You <em>&amp;</em> Me</h2>
+        <p class="section-sub">a little deck of our favorite chapters</p>
+      </header>
+      <div class="stack" id="usStack"></div>
+      <div class="us__finale" id="usFinale">
+        <div class="heartmask" id="heartMask"></div>
+        <p class="us__forever" id="usForever"></p>
+      </div>
+    </section>
+
+    <!-- 05 SQUAD -->
+    <section class="squad" id="squad" data-chapter="The Squad">
+      <header class="section-head">
+        <p class="kicker">chapter 05</p>
+        <h2 data-split>The <em>Squad</em></h2>
+        <p class="section-sub">the people who make you laugh till it hurts · drag the rows</p>
+      </header>
+      <div class="squad__rows" id="squadRows"></div>
+    </section>
+
+    <!-- 06 NODDY -->
+    <section class="noddy" id="noddy" data-chapter="Noddy">
+      <svg class="wave wave--top" viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true"><path d="M0,60 C240,130 480,0 720,50 C960,100 1200,10 1440,60 L1440,0 L0,0 Z"/></svg>
+      <div class="noddy__clouds" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <p class="kicker kicker--dark">chapter 06 · the fluffiest one</p>
+      <h2 class="noddy__title" id="noddyTitle"></h2>
+      <p class="noddy__bubble" id="noddyBubble"></p>
+      <div class="noddy__grid" id="noddyGrid"></div>
+      <p class="noddy__hint">psst… click anywhere 🐾</p>
+      <svg class="wave wave--bottom" viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true"><path d="M0,60 C240,130 480,0 720,50 C960,100 1200,10 1440,60 L1440,120 L0,120 Z"/></svg>
+    </section>
+
+    <!-- 07 VIDEOS -->
+    <section class="videos" id="videos" data-chapter="Your People">
+      <header class="section-head">
+        <p class="kicker">chapter 07</p>
+        <h2 data-split>Messages from <em>your people</em></h2>
+        <p class="section-sub">grab some tissues · tap a card to play</p>
+      </header>
+      <div class="videos__grid" id="videoGrid"></div>
+    </section>
+
+    <!-- 08 WISH WALL -->
+    <section class="wall" id="wall" data-chapter="Wish Wall">
+      <header class="section-head">
+        <p class="kicker">chapter 08</p>
+        <h2 data-split>The <em>Wish</em> Wall</h2>
+        <p class="section-sub"><span id="wishCount">0</span> wishes and counting · tap one to open it</p>
+        <button class="btn btn--glow" id="writeBtn" data-cursor="write">Write <span data-name>Timmi</span> a wish ✍️</button>
+      </header>
+      <div class="wall__viewport" id="wallViewport" data-cursor="drag">
+        <div class="wall__lights" aria-hidden="true"></div>
+        <div class="wall__board" id="wallBoard"></div>
+      </div>
+      <p class="wall__hint">drag the board to explore</p>
+    </section>
+
+    <!-- 09 PLAYLIST -->
+    <section class="playlist" id="playlist" data-chapter="Her Songs">
+      <div class="playlist__grid">
+        <div class="turntable">
+          <div class="vinyl" id="vinyl">
+            <div class="vinyl__label"><span data-name>Timmi</span><small>side A · birthday mix</small></div>
+          </div>
+          <div class="tonearm" id="tonearm"><i></i></div>
+        </div>
+        <div class="playlist__side">
+          <p class="kicker">chapter 09</p>
+          <h2 data-split>Songs of <em data-name>Timmi</em></h2>
+          <ol class="songs" id="songList"></ol>
+          <button class="btn btn--glow" id="playBtn" data-cursor="play">▶ Play her playlist</button>
+          <div class="playlist__frame" id="playlistFrame" hidden></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10 FINALE -->
+    <section class="finale" id="finale" data-chapter="Make a Wish">
+      <canvas class="finale__canvas" id="finaleCanvas"></canvas>
+      <div class="finale__inner">
+        <p class="kicker">chapter 10</p>
+        <h2 data-split>Make a <em>wish</em></h2>
+        <p class="finale__sub">tap the candles to blow them out — or <button class="link-btn" id="micBtn">blow into your mic 🎤</button></p>
+        <div class="cake" id="cake">
+          <div class="cake__candles" id="candles"></div>
+          <div class="cake__tier cake__tier--top"><i></i></div>
+          <div class="cake__tier cake__tier--mid"><i></i></div>
+          <div class="cake__tier cake__tier--bot"><i></i></div>
+          <div class="cake__plate"></div>
+        </div>
+        <div class="finale__end" id="finaleEnd">
+          <p class="finale__wish" id="finaleWish"></p>
+          <p class="finale__sign">with all my love, <span data-from>Saurabh</span> &amp; <span data-dog>Noddy</span> 🐾</p>
+          <button class="btn" id="replayBtn">↺ relive it from the start</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ OVERLAYS ============ -->
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer" hidden>
+    <button class="ov-close" data-close aria-label="Close">✕</button>
+    <button class="lightbox__nav lightbox__nav--prev" data-prev aria-label="Previous photo">←</button>
+    <figure class="lightbox__fig"><div class="lightbox__media" id="lbMedia"></div><figcaption id="lbCap"></figcaption></figure>
+    <button class="lightbox__nav lightbox__nav--next" data-next aria-label="Next photo">→</button>
+    <p class="lightbox__count" id="lbCount"></p>
+  </div>
+
+  <div class="vmodal" id="vmodal" role="dialog" aria-modal="true" aria-label="Video message" hidden>
+    <button class="ov-close" data-close aria-label="Close">✕</button>
+    <div class="vmodal__inner"><div class="vmodal__frame" id="vmFrame"></div><p class="vmodal__name" id="vmName"></p></div>
+  </div>
+
+  <div class="wishmodal" id="wishModal" role="dialog" aria-modal="true" aria-label="Wish" hidden>
+    <div class="wishcard" id="wishCard">
+      <div class="wishcard__face wishcard__front" id="wishFront"></div>
+      <div class="wishcard__face wishcard__back" id="wishBack"></div>
+    </div>
+    <button class="ov-close" data-close aria-label="Close">✕</button>
+  </div>
+
+  <div class="writemodal" id="writeModal" role="dialog" aria-modal="true" aria-label="Write a wish" hidden>
+    <form class="writeform" id="wishForm">
+      <button type="button" class="ov-close" data-close aria-label="Close">✕</button>
+      <h3>A wish for <em data-name>Timmi</em></h3>
+      <label>Your name<input name="name" maxlength="40" required autocomplete="name" placeholder="e.g. Priya"></label>
+      <label>Your wish<textarea name="message" maxlength="600" rows="5" required placeholder="Write something from the heart…"></textarea></label>
+      <fieldset class="swatches"><legend>Pick a note color</legend></fieldset>
+      <button class="btn btn--glow" type="submit">Pin it to the wall 📌</button>
+    </form>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <audio id="bgm" loop preload="none"></audio>
+
+  <script src="config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" integrity="sha384-g4NTh/Iv5PPU4xPyhEWqPcwtNXOvdaDI8LLnyYfyNZOjKJeYQyjzQ9X5275eBjpt" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" integrity="sha384-Z3REaz79l2IaAZqJsSABtTbhjgOUYyV3p90XNnAPCSHg3EMTz1fouunq9WZRtj3d" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/Draggable.min.js" integrity="sha384-ioeiiA4Qj8TNkk15vf+DfcM4fQbw3fUabf9VWRr56yQZ2fjAWiHPV6oWH2Jo0bXE" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js" integrity="sha384-B2WBjDzEjJpYvhmi2UyEn7rektqkf5suS6sNoyyrf0EBAwBHdkiXxIlU0V5Ru2ed" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/split-type@0.3.4/umd/index.min.js" integrity="sha384-wQImCCD/id1jPTwSloatzKlEpnEAQ5aH8H2Ud27FnNcJ1lf2+hB75ctoWnWxyD8X" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js" integrity="sha384-sPwMflxqfAN+Q5mvlkLmHiX3PORGbZSXHiSGPTXT9VHCD/AB+b+r+vJWsqprv+7k" crossorigin="anonymous"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

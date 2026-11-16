@@ -1,0 +1,42 @@
+# Shrinks every .jpg/.jpeg inside photos/ to at most 1600px on the long side
+# (still crisp on phones, but about 10x smaller so the site loads fast).
+# It OVERWRITES the copies in photos/ - keep your originals somewhere else.
+#
+# Run from the for-timmi folder:
+#   powershell -ExecutionPolicy Bypass -File tools\resize-photos.ps1
+param([string]$Path = (Join-Path $PSScriptRoot '..\photos'), [int]$Max = 1600, [long]$Quality = 82)
+
+Add-Type -AssemblyName System.Drawing
+$codec = [System.Drawing.Imaging.ImageCodecInfo]::GetImageEncoders() | Where-Object { $_.MimeType -eq 'image/jpeg' }
+$params = New-Object System.Drawing.Imaging.EncoderParameters 1
+$params.Param[0] = New-Object System.Drawing.Imaging.EncoderParameter ([System.Drawing.Imaging.Encoder]::Quality), $Quality
+
+Get-ChildItem $Path -Recurse -File | Where-Object { $_.Extension -match '^\.(jpe?g)$' } | ForEach-Object {
+  $file = $_.FullName
+  $before = $_.Length
+  $img = [System.Drawing.Image]::FromFile($file)
+  $rotated = $false
+  # Phones store rotation as an EXIF flag; apply it so photos aren't sideways after saving.
+  if ($img.PropertyIdList -contains 0x0112) {
+    switch ($img.GetPropertyItem(0x0112).Value[0]) {
+      3 { $img.RotateFlip('Rotate180FlipNone'); $rotated = $true }
+      6 { $img.RotateFlip('Rotate90FlipNone'); $rotated = $true }
+      8 { $img.RotateFlip('Rotate270FlipNone'); $rotated = $true }
+    }
+  }
+  $scale = [Math]::Min(1.0, $Max / [Math]::Max($img.Width, $img.Height))
+  if ($scale -ge 1 -and -not $rotated -and $before -lt 700KB) { $img.Dispose(); Write-Host "ok      $($_.Name)"; return }
+
+  $w = [int]($img.Width * $scale); $h = [int]($img.Height * $scale)
+  $bmp = New-Object System.Drawing.Bitmap $w, $h
+  $g = [System.Drawing.Graphics]::FromImage($bmp)
+  $g.InterpolationMode = 'HighQualityBicubic'
+  $g.DrawImage($img, 0, 0, $w, $h)
+  $g.Dispose(); $img.Dispose()
+  $tmp = "$file.tmp"
+  $bmp.Save($tmp, $codec, $params); $bmp.Dispose()
+  Move-Item $tmp $file -Force
+  $after = (Get-Item $file).Length
+  Write-Host ("shrunk  {0}  {1:N1}MB -> {2:N0}KB" -f $_.Name, ($before / 1MB), ($after / 1KB))
+}
+Write-Host "Done. (.png and .heic files are skipped - save iPhone HEIC photos as JPG first.)"
