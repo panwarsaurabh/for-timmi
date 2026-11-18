@@ -217,7 +217,7 @@ export function initWall(ctx) {
     gsap.to(writeModal, { opacity: 0, duration: .3, onComplete: () => (writeModal.hidden = true) });
     ctx.unlock();
   };
-  $('#writeBtn').addEventListener('click', openWrite);
+  $('#writeBtn')?.addEventListener('click', openWrite); // button removed from the page; put it back in index.html to let visitors write
   $('[data-close]', writeModal).addEventListener('click', closeWrite);
   writeModal.addEventListener('click', e => { if (e.target === writeModal) closeWrite(); });
   addEventListener('keydown', e => { if (e.key === 'Escape') { closeWrite(); closeWish(); } });
