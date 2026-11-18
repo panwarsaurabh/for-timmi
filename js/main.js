@@ -90,7 +90,10 @@ function initCursor() {
   const dx = gsap.quickTo(dot, 'x', { duration: .08 }), dy = gsap.quickTo(dot, 'y', { duration: .08 });
   const SPARKS = ['✦', '♥', '✧', '❤', '⋆'], COLORS = ['#ff2e88', '#ffc93c', '#5ec8ff', '#a78bfa', '#ff7a59'];
   let last = 0;
+  // over a YouTube iframe (or outside the window) the page stops getting moves: hide ours, the native one shows
+  document.documentElement.addEventListener('pointerleave', () => document.body.classList.add('cursor-away'));
   addEventListener('pointermove', e => {
+    document.body.classList.toggle('cursor-away', e.target.tagName === 'IFRAME');
     cx(e.clientX); cy(e.clientY); dx(e.clientX); dy(e.clientY);
     const now = performance.now();
     if (now - last > 45) {
@@ -105,6 +108,7 @@ function initCursor() {
     }
   }, { passive: true });
   document.addEventListener('pointerover', e => {
+    if (e.target.tagName === 'IFRAME') document.body.classList.add('cursor-away');
     const t = e.target.closest('[data-cursor], a, button, .note, .polaroid');
     const l = t?.dataset.cursor || (t?.closest('[data-cursor]')?.dataset.cursor) || '';
     cur.classList.toggle('is-hover', !!t);

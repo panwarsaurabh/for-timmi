@@ -4,7 +4,7 @@ import { createUniverse } from './webgl.js';
 const C = window.CONFIG;
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
-const EMOJI = { travel: '✈️', us: '💞', friends: '🥂', noddy: '🐶', video: '🎬' };
+const EMOJI = { travel: '✈️', us: '💞', lens: '📸', friends: '🥂', noddy: '🐶', video: '🎬' };
 const YT_ID = /^[\w-]{11}$/;
 
 let ctx, esc;
@@ -139,6 +139,7 @@ function initPetals() {
 // ================================================================= TRAVEL
 function initTravel() {
   const track = $('#travelTrack');
+  gsap.utils.shuffle(C.travel); // new order on every visit
   track.insertAdjacentHTML('beforeend', C.travel.map((t, i) => `
     <article class="trip">
       <button class="trip__frame" data-i="${i}" data-cursor="view" aria-label="Open photo: ${esc(t.place)}">${media(t, 'travel')}</button>
@@ -228,6 +229,69 @@ function initUs() {
   gsap.timeline({ scrollTrigger: { trigger: '#usFinale', start: 'top top', end: '+=120%', pin: true, scrub: .8 } })
     .fromTo('#heartMask', { '--m': '0%' }, { '--m': '260%', ease: 'power2.in', duration: 1 })
     .fromTo('#usForever', { opacity: 0, scale: .6, y: 40 }, { opacity: 1, scale: 1, y: 0, duration: .4, ease: 'back.out(2)' }, .45);
+}
+
+// ================================================================= THROUGH MY LENS
+// Photos come from photos/lens/photos.js (written by tools/resize-photos.ps1) as [src, width, height].
+function initLens() {
+  const raw = window.LENS_PHOTOS || [];
+  const demo = !raw.length;
+  const list = (demo ? Array.from({ length: 24 }, (_, i) => ['', 3, [4, 5, 3.4, 4.6][i % 4]]) : raw).map(([src, w, h]) => {
+    const d = /(20\d\d)[-_]?(\d\d)[-_]?(\d\d)/.exec(src); // phone filenames like IMG_20240814_... get a retro date stamp
+    return { src, caption: '', ar: w / h, stamp: d ? `'${d[1].slice(2)} ${d[2]} ${d[3]}` : '' };
+  });
+  gsap.utils.shuffle(list); // a fresh order on every visit
+  const n = list.length, pad = s => String(s).padStart(3, '0');
+  if (!demo) $('#lensSub').textContent = `${n} frames of my favourite subject · tap any one`;
+
+  const nCols = innerWidth < 640 ? 2 : innerWidth < 1100 ? 3 : 4;
+  const cols = Array.from({ length: nCols }, () => []), heights = cols.map(() => 0);
+  // balance columns: tallest photos first, each into the shortest column; then shuffle within columns.
+  // CSS stretches the last photo of each column so the bottoms end perfectly level.
+  list.map((p, i) => i).sort((a, b) => list[a].ar - list[b].ar).forEach(i => {
+    const c = heights.indexOf(Math.min(...heights));
+    heights[c] += 1 / list[i].ar + .05;
+    cols[c].push(i);
+  });
+  const shotHTML = i => { const p = list[i]; return `
+    <button class="shot" data-i="${i}" data-cursor="view" style="--ar:${p.ar}" aria-label="Open photo ${i + 1} of ${n}">
+      ${media(p, 'lens')}${p.stamp ? `<span class="shot__date" aria-hidden="true">${p.stamp}</span>` : ''}</button>`; };
+  const grid = $('#lensGrid');
+  grid.innerHTML = cols.map(c => `<div class="lens__col">${gsap.utils.shuffle(c).map(shotHTML).join('')}</div>`).join('');
+  wireImages(grid);
+  grid.addEventListener('click', e => {
+    const b = e.target.closest('.shot');
+    if (b) openLightbox(list, 'lens', +b.dataset.i, b);
+  });
+
+  const count = $('#lensCount');
+  ScrollTrigger.create({
+    trigger: grid, start: 'top center', end: 'bottom center',
+    onUpdate: self => (count.textContent = `FRAME ${pad(Math.max(1, Math.ceil(self.progress * n)))} / ${pad(n)}`),
+  });
+  if (ctx.REDUCED) return;
+
+  // columns drift at different speeds, all settling level as the bottom of the wall arrives
+  $$('.lens__col', grid).forEach((col, c) => {
+    gsap.fromTo(col, { y: c % 2 ? 240 : 70 }, { y: 0, ease: 'none', scrollTrigger: { trigger: grid, start: 'top bottom', end: 'bottom bottom', scrub: true } });
+  });
+  // each photo "develops" as it comes into view: overexposed and grey -> full colour
+  const shots = $$('.shot', grid);
+  gsap.set(shots, { opacity: 0 });
+  // IntersectionObserver (not ScrollTrigger) because the drifting columns would skew precomputed trigger positions
+  const io = new IntersectionObserver(entries => {
+    const b = entries.filter(e => e.isIntersecting).map(e => e.target);
+    if (!b.length) return;
+    b.forEach(t => io.unobserve(t));
+    gsap.fromTo(b, { opacity: 0, y: 50, filter: 'brightness(2.4) saturate(0) blur(6px)' },
+      { opacity: 1, y: 0, filter: 'brightness(1) saturate(1) blur(0px)', duration: 1.3, ease: 'power3.out', stagger: Math.min(.08, .5 / b.length), clearProps: 'filter' });
+  });
+  shots.forEach(s => io.observe(s));
+  // viewfinder powers on with a camera flash
+  gsap.timeline({ scrollTrigger: { trigger: '.lens__body', start: 'top 60%', once: true } })
+    .fromTo('.lens__flash', { opacity: .85 }, { opacity: 0, duration: .9, ease: 'power2.out' })
+    .from('.lens__corner', { scale: 1.6, opacity: 0, duration: .8, ease: 'expo.out', stagger: .05 }, 0)
+    .from('.lens__rec, .lens__count, .lens__exif, .lens__batt', { opacity: 0, y: 10, duration: .6, stagger: .08 }, .2);
 }
 
 // ================================================================= SQUAD
@@ -339,14 +403,70 @@ function initNoddy() {
   $$('.noddy__clouds i').forEach((c, i) => gsap.to(c, { x: i % 2 ? 40 : -40, y: gsap.utils.random(-20, 20), duration: gsap.utils.random(5, 9), ease: 'sine.inOut', yoyo: true, repeat: -1 }));
 }
 
+// ================================================================= AWARDS
+function initAwards() {
+  const list = C.awards || [];
+  const section = $('#awards');
+  if (!list.length) { section.remove(); return; }
+  $('#awardsYear').textContent = C.awardsYear || new Date().getFullYear();
+  const grid = $('#awardsGrid');
+  grid.innerHTML = list.map((a, i) => `
+    <button class="award" data-cursor="open" aria-pressed="false" aria-label="Award: ${esc(a.title)}. Tap to reveal the winner">
+      <span class="award__inner">
+        <span class="award__face award__front">
+          <span class="award__no">nº ${String(i + 1).padStart(2, '0')}</span>
+          <span class="award__medal">${esc(a.icon || '🏆')}</span>
+          <span class="award__cat">best in category</span>
+          <span class="award__title">${esc(a.title)}</span>
+          <span class="award__tap">tap to open the envelope ✉️</span>
+        </span>
+        <span class="award__face award__back">
+          <span class="award__cat">and the award goes to…</span>
+          <span class="award__winner">${esc(C.name)}</span>
+          <span class="award__trophy">🏆</span>
+          <span class="award__note">${esc(a.note || '')}</span>
+          <span class="award__stamp">winner</span>
+        </span>
+      </span>
+    </button>`).join('');
+
+  const GOLD = ['#ffd36b', '#ffb703', '#fff3c4', '#ff2e88', '#ffffff'];
+  $$('.award', grid).forEach(card => {
+    tilt(card, 8);
+    card.addEventListener('click', () => {
+      const open = card.classList.toggle('is-open');
+      card.setAttribute('aria-pressed', open);
+      if (!open || ctx.REDUCED) return;
+      const r = card.getBoundingClientRect();
+      const origin = { x: (r.left + r.width / 2) / innerWidth, y: (r.top + r.height / 2) / innerHeight };
+      setTimeout(() => {
+        confetti({ particleCount: 90, spread: 80, startVelocity: 38, origin, colors: GOLD, scalar: 1.1, ticks: 220 });
+        gsap.fromTo($('.award__stamp', card), { scale: 3, opacity: 0, rotation: -40 }, { scale: 1, opacity: 1, rotation: -14, duration: .5, ease: 'back.out(2.5)' });
+      }, 350);
+    });
+  });
+
+  if (ctx.REDUCED) return;
+  gsap.from('.award', { y: 120, rotation: i => (i % 2 ? 6 : -6), opacity: 0, stagger: .14, duration: 1.3, ease: 'expo.out', scrollTrigger: { trigger: grid, start: 'top 85%' } });
+  gsap.from('.award__medal', { rotationY: 540, scale: .3, stagger: .14, duration: 1.8, ease: 'expo.out', scrollTrigger: { trigger: grid, start: 'top 85%' } });
+}
+
 // ================================================================= VIDEOS
 function initVideos() {
   const grid = $('#videoGrid');
-  grid.innerHTML = C.videos.map((v, i) => {
-    const id = YT_ID.test(v.id || '') ? v.id : '';
-    const thumb = id ? { src: `https://img.youtube.com/vi/${id}/hqdefault.jpg`, caption: v.name } : { caption: v.name };
-    return `<button class="vcard" data-i="${i}" data-cursor="play">
-      <span class="vcard__thumb">${media(thumb, 'video')}<span class="vcard__play">▶</span></span>
+  // accepts a full YouTube link (youtu.be/…, watch?v=…, shorts/…) or a bare id; Shorts are vertical
+  const vids = C.videos.map(v => {
+    const s = (v.link || v.id || '').trim();
+    const m = /(?:youtu\.be\/|[?&]v=|shorts\/|embed\/)([\w-]{11})/.exec(s);
+    const id = m ? m[1] : YT_ID.test(s) ? s : '';
+    return { ...v, id, vertical: v.vertical ?? (!!v.file || /shorts\//.test(s)) };
+  });
+  grid.innerHTML = vids.map((v, i) => {
+    const id = v.id;
+    const thumb = id ? { src: `https://i.ytimg.com/vi/${id}/${v.vertical ? 'oardefault' : 'hqdefault'}.jpg`, caption: v.name } : { caption: v.name };
+    const pic = v.file ? `<span class="media"><video src="${esc(v.file)}#t=0.5" muted playsinline preload="metadata"></video></span>` : media(thumb, 'video');
+    return `<button class="vcard${v.vertical ? ' vcard--tall' : ''}" data-i="${i}" data-cursor="play">
+      <span class="vcard__thumb">${pic}<span class="vcard__play">▶</span></span>
       <span class="vcard__name">${esc(v.name)}</span><span class="vcard__note">${esc(v.note || '')}</span></button>`;
   }).join('');
   wireImages(grid);
@@ -369,10 +489,12 @@ function initVideos() {
   $$('.vcard', grid).forEach(card => {
     tilt(card, 12);
     card.addEventListener('click', e => {
-      const v = C.videos[+card.dataset.i], id = YT_ID.test(v.id || '') ? v.id : '';
+      const v = vids[+card.dataset.i], id = v.id;
+      modal.classList.toggle('is-vertical', !!v.vertical);
       origin = `${e.clientX || innerWidth / 2}px ${e.clientY || innerHeight / 2}px`;
-      frame.innerHTML = id
-        ? `<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&playsinline=1" title="Video message from ${esc(v.name)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`
+      frame.innerHTML = v.file
+        ? `<video src="${esc(v.file)}" controls autoplay playsinline title="Video message from ${esc(v.name)}"></video>`
+        : id ?`<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&playsinline=1" title="Video message from ${esc(v.name)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen"></iframe>`
         : `<p>${esc(v.name)}'s video is still on its way 🎬<br><small style="font-size:.55em;opacity:.6">add the YouTube id in config.js</small></p>`;
       $('#vmName').textContent = `from ${v.name} 💌`;
       modal.hidden = false; isOpen = true;
@@ -397,16 +519,30 @@ function initPlaylist() {
   const pid = /^[\w-]+$/.test(C.playlistId || '') ? C.playlistId : '';
   let playing = false, rot = 0, vel = 0, active = false;
 
+  const btn = $('#playBtn'), btnText = btn.textContent;
+  // The player stays invisible (audio only); the button toggles play/pause.
   function play(index = 0) {
     if (!pid) { ctx.toast('Add your YouTube playlistId in config.js 🎶'); arm.classList.add('is-playing'); playing = true; return; }
-    frame.hidden = false;
-    frame.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/videoseries?list=${pid}&index=${index}&autoplay=1&playsinline=1" title="${esc(C.name)}'s playlist" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
+    const id = (C.songs[index] || {}).id;
+    const src = YT_ID.test(id || '')
+      ? `https://www.youtube-nocookie.com/embed/${id}?list=${pid}&autoplay=1&playsinline=1`
+      : `https://www.youtube-nocookie.com/embed/videoseries?list=${pid}&index=${index}&autoplay=1&playsinline=1`;
+    frame.innerHTML = `<iframe src="${src}" title="${esc(C.name)}'s playlist" allow="autoplay; encrypted-media"></iframe>`;
+    $$('.song', list).forEach((b, i) => b.classList.toggle('is-active', i === index));
     arm.classList.add('is-playing');
+    btn.textContent = '❚❚ Pause';
     playing = true;
     ctx.audio.duck();
-    ScrollTrigger.refresh();
   }
-  $('#playBtn').addEventListener('click', () => play(0));
+  function stop() {
+    frame.innerHTML = '';
+    $$('.song', list).forEach(b => b.classList.remove('is-active'));
+    arm.classList.remove('is-playing');
+    btn.textContent = btnText;
+    playing = false;
+    ctx.audio.unduck();
+  }
+  btn.addEventListener('click', () => (playing && pid ? stop() : play(0)));
   $$('.song', list).forEach(b => b.addEventListener('click', () => play(+b.dataset.i)));
 
   ScrollTrigger.create({ trigger: '#playlist', start: 'top bottom', end: 'bottom top', onToggle: s => (active = s.isActive), onUpdate: s => (vel = s.getVelocity()) });
@@ -515,8 +651,10 @@ export function initChapters(context) {
   initLetter();
   initTravel();
   initUs();
+  initLens();
   initSquad();
   initNoddy();
+  initAwards();
   initVideos();
   initPlaylist();
   initFinale();

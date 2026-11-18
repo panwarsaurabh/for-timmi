@@ -36,6 +36,7 @@ Then open http://localhost:8000. Refresh the page after each change you make to 
    |---|---|
    | `photos/travel/` | Around the World |
    | `photos/us/` | You & Me |
+   | `photos/lens/` | Through My Lens (all your photos of her, as many as you like, no config needed) |
    | `photos/friends/` | The Squad |
    | `photos/noddy/` | Noddy |
 
@@ -46,6 +47,8 @@ Then open http://localhost:8000. Refresh the page after each change you make to 
    ```
 
    iPhone `.heic` photos don't work in browsers. Open them in the Windows Photos app and use **Save as → .jpg** first.
+
+   The same script also writes the list of everything in `photos/lens/` to `photos/lens/photos.js`. That means "Through My Lens" needs no typing: drop the photos in, run the script, and refresh. Photos appear in filename order, so phone names like `IMG_20240814_…` come out in date order and get a retro orange date stamp. Re-run the script whenever you add or remove photos there.
 
 3. In `config.js`, write each file's path in `src`:
 
@@ -115,7 +118,8 @@ What to expect once it's live:
 - **Delay:** Google refreshes the published CSV about every 5 minutes. The person who posts sees their wish immediately, and everyone else sees it after that delay. The wall also checks for new wishes every minute while it's open.
 - **Moderation:** delete a row in the Sheet and that wish disappears from the wall.
 - **Privacy:** the published CSV is readable by anyone who finds its link. That's fine for birthday wishes, but don't add fields like email or phone number.
-- **Demo mode:** until `csvUrl` is filled in, the wall shows the `sampleWishes` from `config.js`, and new wishes are only stored on that device.
+- **Wishes you collect yourself** go in `wishes` in `config.js` and are always on the wall.
+- **Before the form is connected:** until `csvUrl` is filled in, wishes written on the site are only stored on that device.
 
 ## 6. The rest of `config.js`
 

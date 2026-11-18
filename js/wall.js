@@ -121,8 +121,9 @@ export function initWall(ctx) {
     return rowsToWishes(parseCSV(await res.text()));
   }
   async function load() {
+    (C.wishes || []).forEach(w => addWish(w));
     if (!csvOk) {
-      [...C.sampleWishes].reverse().forEach(w => addWish(w));
+      store.get().forEach(w => addWish(w));
     } else {
       try {
         const ws = await fetchCsv();
@@ -186,7 +187,9 @@ export function initWall(ctx) {
     const cx = (innerWidth - cw) / 2, cy = (innerHeight - ch) / 2;
     const rot = parseFloat(el.style.getPropertyValue('--r')) || 0;
     el.style.visibility = 'hidden';
-    wishTl = gsap.timeline({ onReverseComplete: () => { wm.hidden = true; el.style.visibility = ''; ctx.unlock(); } })
+    // hide the board while a wish is open: some GPUs paint the notes over the 3D-flipping card
+    board.style.visibility = 'hidden';
+    wishTl = gsap.timeline({ onReverseComplete: () => { wm.hidden = true; el.style.visibility = ''; board.style.visibility = ''; ctx.unlock(); } })
       .fromTo(wm, { backgroundColor: 'rgba(10,3,18,0)', backdropFilter: 'blur(0px)' }, { backgroundColor: 'rgba(10,3,18,.7)', backdropFilter: 'blur(10px)', duration: .5 }, 0)
       .fromTo(card,
         { x: r.left + r.width / 2 - cw / 2, y: r.top + r.height / 2 - ch / 2, scaleX: r.width / cw, scaleY: r.height / ch, rotation: rot, rotationY: 0 },

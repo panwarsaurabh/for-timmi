@@ -11,7 +11,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💖</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Fraunces:ital,opsz,wght@0,9..144,200..800;1,9..144,200..800&family=Syne:wght@500;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Kalam:wght@400;700&family=Fraunces:ital,opsz,wght@0,9..144,200..800;1,9..144,200..800&family=Syne:wght@500;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.css" integrity="sha384-pAFowDtEJGvoq8dGiFmgKkO1h5cvbHkCysvXumyjfJBsi8qJwG429whEp2xanR+c" crossorigin="anonymous">
   <link rel="stylesheet" href="css/style.css">
   <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }</script>
@@ -121,21 +121,42 @@
       </div>
     </section>
 
-    <!-- 05 SQUAD -->
+    <!-- 05 THROUGH MY LENS -->
+    <section class="lens" id="lens" data-chapter="Through My Lens">
+      <header class="section-head">
+        <p class="kicker">chapter 05 · shot by me, starring you</p>
+        <h2 data-split>Through <em>My Lens</em></h2>
+        <p class="section-sub" id="lensSub">every frame I've ever taken of you · tap any one</p>
+      </header>
+      <div class="lens__body">
+        <div class="lens__vf" aria-hidden="true">
+          <i class="lens__corner"></i><i class="lens__corner"></i><i class="lens__corner"></i><i class="lens__corner"></i>
+          <span class="lens__rec"><b></b>REC</span>
+          <span class="lens__count" id="lensCount">FRAME 001</span>
+          <span class="lens__exif">ISO 100 · ƒ/1.8 · 1/250 · ♡ AUTO</span>
+          <span class="lens__batt">▮▮▮▯ 100% in love</span>
+          <i class="lens__focus"></i>
+          <i class="lens__flash"></i>
+        </div>
+        <div class="lens__grid" id="lensGrid"></div>
+      </div>
+    </section>
+
+    <!-- 06 SQUAD -->
     <section class="squad" id="squad" data-chapter="The Squad">
       <header class="section-head">
-        <p class="kicker">chapter 05</p>
+        <p class="kicker">chapter 06</p>
         <h2 data-split>The <em>Squad</em></h2>
         <p class="section-sub">the people who make you laugh till it hurts · drag the rows</p>
       </header>
       <div class="squad__rows" id="squadRows"></div>
     </section>
 
-    <!-- 06 NODDY -->
+    <!-- 07 NODDY -->
     <section class="noddy" id="noddy" data-chapter="Noddy">
       <svg class="wave wave--top" viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true"><path d="M0,60 C240,130 480,0 720,50 C960,100 1200,10 1440,60 L1440,0 L0,0 Z"/></svg>
       <div class="noddy__clouds" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
-      <p class="kicker kicker--dark">chapter 06 · the fluffiest one</p>
+      <p class="kicker kicker--dark">chapter 07 · the fluffiest one</p>
       <h2 class="noddy__title" id="noddyTitle"></h2>
       <p class="noddy__bubble" id="noddyBubble"></p>
       <div class="noddy__grid" id="noddyGrid"></div>
@@ -143,20 +164,31 @@
       <svg class="wave wave--bottom" viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true"><path d="M0,60 C240,130 480,0 720,50 C960,100 1200,10 1440,60 L1440,120 L0,120 Z"/></svg>
     </section>
 
-    <!-- 07 VIDEOS -->
+    <!-- 08 AWARDS -->
+    <section class="awards" id="awards" data-chapter="The Awards">
+      <div class="awards__lights" aria-hidden="true"><i></i><i></i></div>
+      <header class="section-head">
+        <p class="kicker kicker--gold">chapter 08 · class of <span id="awardsYear">2026</span></p>
+        <h2 data-split>The <em data-name>Vimran</em> Awards</h2>
+        <p class="section-sub">honouring outstanding achievements in being absolutely iconic · tap an envelope</p>
+      </header>
+      <div class="awards__grid" id="awardsGrid"></div>
+    </section>
+
+    <!-- 09 VIDEOS -->
     <section class="videos" id="videos" data-chapter="Your People">
       <header class="section-head">
-        <p class="kicker">chapter 07</p>
+        <p class="kicker">chapter 09</p>
         <h2 data-split>Messages from <em>your people</em></h2>
         <p class="section-sub">grab some tissues · tap a card to play</p>
       </header>
       <div class="videos__grid" id="videoGrid"></div>
     </section>
 
-    <!-- 08 WISH WALL -->
+    <!-- 10 WISH WALL -->
     <section class="wall" id="wall" data-chapter="Wish Wall">
       <header class="section-head">
-        <p class="kicker">chapter 08</p>
+        <p class="kicker">chapter 10</p>
         <h2 data-split>The <em>Wish</em> Wall</h2>
         <p class="section-sub"><span id="wishCount">0</span> wishes and counting · tap one to open it</p>
         <button class="btn btn--glow" id="writeBtn" data-cursor="write">Write <span data-name>Timmi</span> a wish ✍️</button>
@@ -168,7 +200,7 @@
       <p class="wall__hint">drag the board to explore</p>
     </section>
 
-    <!-- 09 PLAYLIST -->
+    <!-- 11 PLAYLIST -->
     <section class="playlist" id="playlist" data-chapter="Her Songs">
       <div class="playlist__grid">
         <div class="turntable">
@@ -178,20 +210,20 @@
           <div class="tonearm" id="tonearm"><i></i></div>
         </div>
         <div class="playlist__side">
-          <p class="kicker">chapter 09</p>
+          <p class="kicker">chapter 11</p>
           <h2 data-split>Songs of <em data-name>Timmi</em></h2>
           <ol class="songs" id="songList"></ol>
           <button class="btn btn--glow" id="playBtn" data-cursor="play">▶ Play her playlist</button>
-          <div class="playlist__frame" id="playlistFrame" hidden></div>
+          <div class="playlist__frame" id="playlistFrame"></div>
         </div>
       </div>
     </section>
 
-    <!-- 10 FINALE -->
+    <!-- 12 FINALE -->
     <section class="finale" id="finale" data-chapter="Make a Wish">
       <canvas class="finale__canvas" id="finaleCanvas"></canvas>
       <div class="finale__inner">
-        <p class="kicker">chapter 10</p>
+        <p class="kicker">chapter 12</p>
         <h2 data-split>Make a <em>wish</em></h2>
         <p class="finale__sub">tap the candles to blow them out — or <button class="link-btn" id="micBtn">blow into your mic 🎤</button></p>
         <div class="cake" id="cake">
@@ -227,7 +259,7 @@
   <div class="wishmodal" id="wishModal" role="dialog" aria-modal="true" aria-label="Wish" hidden>
     <div class="wishcard" id="wishCard">
       <div class="wishcard__face wishcard__front" id="wishFront"></div>
-      <div class="wishcard__face wishcard__back" id="wishBack"></div>
+      <div class="wishcard__face wishcard__back" id="wishBack" data-lenis-prevent></div>
     </div>
     <button class="ov-close" data-close aria-label="Close">✕</button>
   </div>
@@ -247,6 +279,7 @@
   <audio id="bgm" loop preload="none"></audio>
 
   <script src="config.js"></script>
+  <script src="photos/lens/photos.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" integrity="sha384-g4NTh/Iv5PPU4xPyhEWqPcwtNXOvdaDI8LLnyYfyNZOjKJeYQyjzQ9X5275eBjpt" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" integrity="sha384-Z3REaz79l2IaAZqJsSABtTbhjgOUYyV3p90XNnAPCSHg3EMTz1fouunq9WZRtj3d" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/Draggable.min.js" integrity="sha384-ioeiiA4Qj8TNkk15vf+DfcM4fQbw3fUabf9VWRr56yQZ2fjAWiHPV6oWH2Jo0bXE" crossorigin="anonymous"></script>
