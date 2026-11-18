@@ -153,6 +153,8 @@ I made this little universe because one card was never going to be enough to hol
     { file: "videos/Ajay.mp4", name: "Ajay", note: "" },
     { file: "videos/Arshi.mp4", name: "Arshi", note: "" },
     { file: "videos/Shubhashish.mp4", name: "Shubhashish", note: "" },
+    { file: "videos/Vanshika.mp4", name: "Vanshika", note: "" },
+    { file: "videos/Arpita.mp4", name: "Arpita", note: "" },
   ],
 
   // -------------------------------------------------------------- PLAYLIST

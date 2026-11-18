@@ -378,6 +378,7 @@ function initNoddy() {
   const WOOFS = ['woof!', 'arf!', 'bork!', '🦴', 'awoo!', `happy bday!`, '💕'];
   section.addEventListener('click', e => {
     if (e.target.closest('button')) return;
+    ctx.sfx.play('woof');
     const r = section.getBoundingClientRect();
     const x = e.clientX - r.left, y = e.clientY - r.top;
     for (let k = 0; k < 4; k++) {
@@ -436,6 +437,7 @@ function initAwards() {
     card.addEventListener('click', () => {
       const open = card.classList.toggle('is-open');
       card.setAttribute('aria-pressed', open);
+      if (open) ctx.sfx.play('envelope');
       if (!open || ctx.REDUCED) return;
       const r = card.getBoundingClientRect();
       const origin = { x: (r.left + r.width / 2) / innerWidth, y: (r.top + r.height / 2) / innerHeight };
@@ -577,6 +579,7 @@ function initFinale() {
     if (c.classList.contains('is-out')) return;
     c.classList.add('is-out');
     c.setAttribute('aria-label', 'Candle blown out');
+    ctx.sfx.play('puff');
     gsap.fromTo($('.smoke', c), { opacity: .8, y: 0, scale: 1 }, { opacity: 0, y: -70, x: gsap.utils.random(-15, 15), scale: 4, duration: 1.6, ease: 'power1.out' });
     if (candles.every(x => x.classList.contains('is-out'))) celebrate();
   }
@@ -592,6 +595,7 @@ function initFinale() {
     const end = Date.now() + 4500;
     (function fire() {
       ctx.burstConfetti({ x: Math.random(), y: Math.random() * .5 });
+      ctx.sfx.play('boom');
       if (Date.now() < end) setTimeout(fire, 380);
     })();
     gsap.to('.cake', { y: 40, scale: .85, duration: 1.4, ease: 'expo.out' });
@@ -611,6 +615,7 @@ function initFinale() {
       const buf = new Uint8Array(an.fftSize);
       let loud = 0, lastBlow = 0;
       ctx.toast('Listening… now blow! 🌬️');
+      ctx.audio.duck(); // silence the tune so the mic only hears her
       (function listen() {
         an.getByteTimeDomainData(buf);
         let sum = 0;
@@ -623,7 +628,7 @@ function initFinale() {
           if (next) blow(next);
         }
         if (candles.some(c => !c.classList.contains('is-out'))) requestAnimationFrame(listen);
-        else { stream.getTracks().forEach(t => t.stop()); ac.close(); }
+        else { stream.getTracks().forEach(t => t.stop()); ac.close(); ctx.audio.unduck(); }
       })();
     } catch (e) {
       ctx.toast('No mic? No problem — just tap the candles 🕯️');

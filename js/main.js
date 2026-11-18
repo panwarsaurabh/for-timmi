@@ -54,32 +54,158 @@ const bgm = $('#bgm'), soundBtn = $('#soundBtn');
 const audio = {
   playing: false, resume: false,
   play() {
-    if (!C.music) return;
+    if (sfx.muted) return;
+    if (!C.music) { this.playing = sfx.tune.start(); return; } // no mp3: music-box Happy Birthday
     bgm.volume = 0;
     bgm.play().then(() => {
       this.playing = true;
       gsap.to(bgm, { volume: .45, duration: 2.5 });
-      soundBtn.classList.add('is-on');
-      soundBtn.setAttribute('aria-pressed', 'true');
     }).catch(() => {});
   },
   pause() {
     this.playing = false;
+    if (!C.music) return sfx.tune.stop();
     gsap.to(bgm, { volume: 0, duration: .6, onComplete: () => bgm.pause() });
-    soundBtn.classList.remove('is-on');
-    soundBtn.setAttribute('aria-pressed', 'false');
   },
-  toggle() { this.playing ? this.pause() : this.play(); },
-  duck() { this.resume = this.resume || this.playing; if (this.playing) this.pause(); },
-  unduck() { if (this.resume) this.play(); this.resume = false; },
+  // a video or song is playing: pause the music and keep UI sounds quiet
+  duck() { this.resume = this.resume || this.playing; if (this.playing) this.pause(); sfx.quiet = true; },
+  unduck() { if (this.resume) this.play(); this.resume = false; sfx.quiet = false; },
 };
+
+// UI sound effects, synthesized with Web Audio (no files to download)
+const sfx = (() => {
+  let ac, out, noise;
+  let muted = false;
+  try { muted = localStorage.getItem('sfxMuted') === '1'; } catch {}
+  const init = () => {
+    if (ac) return ac.state === 'suspended' ? ac.resume() : null;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    ac = new AC();
+    out = ac.createGain(); out.gain.value = .35; out.connect(ac.destination);
+    noise = ac.createBuffer(1, ac.sampleRate, ac.sampleRate);
+    const d = noise.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  };
+  const env = (g, t, vol, dur, attack = .005) => {
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + attack);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  };
+  const tone = (f1, f2, dur, { type = 'sine', vol = .5, at = 0, lp } = {}) => {
+    const t = ac.currentTime + at, o = ac.createOscillator(), g = ac.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(f1, t);
+    o.frequency.exponentialRampToValueAtTime(f2, t + dur);
+    let node = o;
+    if (lp) { const f = ac.createBiquadFilter(); f.frequency.value = lp; o.connect(f); node = f; }
+    node.connect(g); g.connect(out); env(g, t, vol, dur);
+    o.start(t); o.stop(t + dur + .05);
+  };
+  const hiss = (dur, { type = 'lowpass', freq = 1000, freq2 = freq, q = 1, vol = .5, at = 0, attack } = {}) => {
+    const t = ac.currentTime + at, s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+    s.buffer = noise; f.type = type; f.Q.value = q;
+    f.frequency.setValueAtTime(freq, t);
+    f.frequency.exponentialRampToValueAtTime(freq2, t + dur);
+    s.connect(f); f.connect(g); g.connect(out); env(g, t, vol, dur, attack);
+    s.start(t, Math.random() * .5); s.stop(t + dur + .05);
+  };
+  const SOUNDS = {
+    gift() { // pop + sparkly chime
+      tone(620, 160, .14, { vol: .6 });
+      hiss(.08, { type: 'highpass', freq: 2500, vol: .25 });
+      [1319, 1760, 2093, 2637].forEach((f, i) => tone(f, f, .7, { type: 'triangle', vol: .16, at: .1 + i * .07 }));
+    },
+    envelope() { // paper rustle
+      hiss(.22, { type: 'bandpass', freq: 900, freq2: 3500, q: .8, vol: .3, attack: .04 });
+    },
+    woof() { // cartoon bark-bark
+      tone(330, 170, .12, { type: 'sawtooth', vol: .35, lp: 1100 });
+      tone(360, 180, .1, { type: 'sawtooth', vol: .28, lp: 1100, at: .17 });
+    },
+    puff() { hiss(.35, { freq: 900, freq2: 300, vol: .4, attack: .06 }); },
+    boom() { // soft firework: thump + crackle
+      tone(120, 50, .3, { vol: .35 });
+      hiss(.45, { freq: 2500, freq2: 400, vol: .22, at: .02 });
+    },
+  };
+  // Happy Birthday (public domain) as a soft looping music box, with a little echo
+  const C4 = 261.63, n = s => C4 * 2 ** (s / 12); // semitones above middle C
+  const G4 = n(7), A4 = n(9), B4 = n(11), C5 = n(12), D5 = n(14), E5 = n(16), F5 = n(17), G5 = n(19);
+  const SONG = [ // [note, beats] in 3/4
+    [G4, .75], [G4, .25], [A4, 1], [G4, 1], [C5, 1], [B4, 2],
+    [G4, .75], [G4, .25], [A4, 1], [G4, 1], [D5, 1], [C5, 2],
+    [G4, .75], [G4, .25], [G5, 1], [E5, 1], [C5, 1], [B4, 1], [A4, 2],
+    [F5, .75], [F5, .25], [E5, 1], [C5, 1], [D5, 1], [C5, 3],
+  ];
+  const BEAT = .62, GAP = 5; // seconds per beat (slow, lullaby pace), pause between loops
+  let bus = null, timer = 0;
+  const loop = () => {
+    let t = ac.currentTime + .1;
+    for (const [f, b] of SONG) {
+      for (const [mult, v] of [[1, .2], [2, .025]]) { // soft bell: mostly pure tone, gentle fade-in
+        const o = ac.createOscillator(), g = ac.createGain();
+        o.frequency.value = f * mult;
+        o.connect(g); g.connect(bus);
+        env(g, t, v, 1.8, .03);
+        o.start(t); o.stop(t + 1.9);
+      }
+      t += b * BEAT;
+    }
+    timer = setTimeout(loop, (t - ac.currentTime + GAP) * 1000);
+  };
+  const tune = {
+    start() {
+      if (!ac || bus) return !!bus;
+      bus = ac.createGain(); bus.gain.value = 0; bus.connect(out);
+      const echo = ac.createDelay(), fb = ac.createGain();
+      echo.delayTime.value = .38; fb.gain.value = .2;
+      bus.connect(echo); echo.connect(fb); fb.connect(echo); echo.connect(out);
+      bus.gain.linearRampToValueAtTime(.18, ac.currentTime + 3); // TUNE VOLUME: raise/lower this number
+      loop();
+      return true;
+    },
+    stop() {
+      if (!bus) return;
+      clearTimeout(timer);
+      const b = bus; bus = null;
+      b.gain.cancelScheduledValues(ac.currentTime);
+      b.gain.setValueAtTime(b.gain.value, ac.currentTime);
+      b.gain.linearRampToValueAtTime(0, ac.currentTime + .6);
+      setTimeout(() => b.disconnect(), 700);
+    },
+  };
+  return {
+    tune,
+    quiet: false,
+    get muted() { return muted; },
+    setMuted(m) { muted = m; try { localStorage.setItem('sfxMuted', m ? '1' : '0'); } catch {} },
+    unlock: init, // call from a tap: browsers only allow audio after one
+    play(name) {
+      if (muted || this.quiet || REDUCED || !ac) return;
+      try { SOUNDS[name](); } catch (e) { console.warn('sfx', name, e.message); }
+    },
+  };
+})();
+
+// the speaker button: turns UI sounds (and music, if any) on/off
+const setSoundBtn = on => { soundBtn.classList.toggle('is-on', on); soundBtn.setAttribute('aria-pressed', String(on)); };
 if (C.music) {
   bgm.src = C.music;
-  bgm.addEventListener('error', () => (soundBtn.hidden = true));
-} else soundBtn.hidden = true;
-soundBtn.addEventListener('click', () => audio.toggle());
+  bgm.addEventListener('error', () => (C.music = ''));
+}
+soundBtn.setAttribute('aria-label', 'Sound on/off');
+soundBtn.addEventListener('click', () => {
+  sfx.unlock();
+  sfx.setMuted(!sfx.muted);
+  if (sfx.muted) audio.pause();
+  else if (sfx.quiet) audio.resume = true; // a video/song is playing: start once it closes
+  else audio.play();
+  setSoundBtn(!sfx.muted);
+});
+setSoundBtn(!sfx.muted);
 
-const ctx = { lenis, REDUCED, TOUCH, SMALL, toast, lock, unlock, audio, esc };
+const ctx = { lenis, REDUCED, TOUCH, SMALL, toast, lock, unlock, audio, sfx, esc };
 
 // ---------------------------------------------------------------- cursor
 function initCursor() {
@@ -229,7 +355,9 @@ async function boot() {
     .from('.gift__kicker, .gift__hint', { y: 20, opacity: 0, stagger: .15, duration: .8, ease: 'expo.out' }, '-=.9');
 
   $('#giftBtn').addEventListener('click', () => {
-    audio.play();
+    sfx.unlock();
+    setTimeout(() => sfx.play('gift'), 420); // as the lid flies off
+    setTimeout(() => { if (!sfx.quiet) audio.play(); }, 1800); // then the birthday tune, after the chime
     gsap.timeline()
       .to('.gift__btn', { rotation: -5, duration: .07, repeat: 5, yoyo: true, ease: 'sine.inOut' })
       .to('.gift__lid', { y: -280, x: 80, rotation: 35, opacity: 0, duration: 1, ease: 'power3.out' })
